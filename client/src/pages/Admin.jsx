@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Calendar, Users, Scissors, TrendingUp, Check, X, Clock } from 'lucide-react'
+import { Calendar, Users, Scissors, TrendingUp, Check, X, Clock, LogOut } from 'lucide-react'
 import {
   getAppointments, updateAppointmentStatus, cancelAppointment,
   getClients, getServices, getBarbers, createService, createBarber
@@ -23,6 +24,7 @@ const STATUS_LABELS = {
 }
 
 export default function Admin() {
+  const navigate = useNavigate()
   const [tab, setTab] = useState(0)
   const [appointments, setAppointments] = useState([])
   const [clients, setClients] = useState([])
@@ -61,7 +63,19 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold mb-8">Panel de administración</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Panel de administración</h1>
+          <button
+            onClick={() => {
+              localStorage.removeItem('famy_token')
+              toast.success('Sesión cerrada')
+              navigate('/login')
+            }}
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-4 py-2 rounded-lg transition-colors"
+          >
+            <LogOut size={16} /> Cerrar sesión
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
