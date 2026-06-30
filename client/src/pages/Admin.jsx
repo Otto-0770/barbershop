@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Calendar, Users, Scissors, TrendingUp, Check, X, Clock, LogOut } from 'lucide-react'
+import { Check, X, LogOut, ChevronRight } from 'lucide-react'
 import {
-  getAppointments, updateAppointmentStatus, cancelAppointment,
+  getAppointments, updateAppointmentStatus,
   getClients, getServices, getBarbers, createService, createBarber
 } from '../api'
+import '../admin.css'
 
 const TABS = ['Citas', 'Clientes', 'Servicios', 'Barberos']
 
-const STATUS_COLORS = {
-  pending: 'bg-yellow-500/20 text-yellow-400',
-  confirmed: 'bg-blue-500/20 text-blue-400',
-  completed: 'bg-green-500/20 text-green-400',
-  cancelled: 'bg-red-500/20 text-red-400',
+const STATUS_CLASS = {
+  pending: 'status-pending',
+  confirmed: 'status-confirmed',
+  completed: 'status-completed',
+  cancelled: 'status-cancelled',
 }
-
 const STATUS_LABELS = {
   pending: 'Pendiente',
   confirmed: 'Confirmada',
@@ -52,6 +52,12 @@ export default function Admin() {
     }
   }
 
+  const logout = () => {
+    localStorage.removeItem('famy_token')
+    toast.success('Sesión cerrada')
+    navigate('/login')
+  }
+
   const stats = {
     today: appointments.filter(a => a.status !== 'cancelled').length,
     pending: appointments.filter(a => a.status === 'pending').length,
@@ -61,186 +67,178 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Panel de administración</h1>
-          <button
-            onClick={() => {
-              localStorage.removeItem('famy_token')
-              toast.success('Sesión cerrada')
-              navigate('/login')
-            }}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-4 py-2 rounded-lg transition-colors"
-          >
-            <LogOut size={16} /> Cerrar sesión
-          </button>
-        </div>
+    <div className="admin-wrap">
+      {/* Header */}
+      <header className="admin-header">
+        <a href="/" className="admin-brand">
+          <img src="/famy-logo.png" alt="Famy" />
+          <div>
+            <div className="admin-brand-text">FAMY</div>
+            <div className="admin-brand-sub">Barber Club</div>
+          </div>
+        </a>
+        <span className="admin-title">Panel de Administración</span>
+        <button className="admin-logout" onClick={logout}>
+          <LogOut size={14} /> Cerrar sesión
+        </button>
+      </header>
 
+      <main className="admin-main">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <StatCard icon={<Calendar size={24} />} label="Citas hoy" value={stats.today} color="text-blue-400" />
-          <StatCard icon={<Clock size={24} />} label="Pendientes" value={stats.pending} color="text-yellow-400" />
-          <StatCard icon={<TrendingUp size={24} />} label="Ingresos del día" value={`$${stats.revenue}`} color="text-green-400" />
+        <div className="admin-stats">
+          <div className="stat-card">
+            <div className="stat-card-bg">📅</div>
+            <div className="stat-card-label">Citas del día</div>
+            <div className="stat-card-value">{stats.today}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-bg">⏳</div>
+            <div className="stat-card-label">Pendientes</div>
+            <div className="stat-card-value">{stats.pending}</div>
+          </div>
+          <div className="stat-card green-accent">
+            <div className="stat-card-bg">💰</div>
+            <div className="stat-card-label">Ingresos completados</div>
+            <div className="stat-card-value">${stats.revenue}</div>
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-800 pb-2">
+        <div className="admin-tabs">
           {TABS.map((t, i) => (
-            <button
-              key={i}
-              onClick={() => setTab(i)}
-              className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-                tab === i ? 'text-amber-400 border-b-2 border-amber-400' : 'text-gray-400 hover:text-white'
-              }`}
-            >
+            <button key={i} className={`admin-tab ${tab === i ? 'active' : ''}`} onClick={() => setTab(i)}>
               {t}
             </button>
           ))}
         </div>
 
-        {/* Tab: Citas */}
+        {/* Citas */}
         {tab === 0 && (
           <div>
-            <div className="flex items-center gap-4 mb-6">
-              <label className="text-gray-400 text-sm">Filtrar por fecha:</label>
+            <div className="admin-filter">
+              <label>Fecha</label>
               <input
                 type="date"
                 value={filterDate}
                 onChange={e => setFilterDate(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-400"
               />
             </div>
-            <div className="space-y-3">
-              {appointments.length === 0 ? (
-                <p className="text-gray-500 text-center py-12">No hay citas para esta fecha</p>
-              ) : (
-                appointments.map(apt => (
-                  <div key={apt.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex gap-4 items-start">
-                      <div className="text-center min-w-[60px]">
-                        <p className="text-amber-400 font-bold text-lg">{apt.time}</p>
-                        <p className="text-gray-500 text-xs">{apt.date}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">{apt.clients?.name}</p>
-                        <p className="text-gray-400 text-sm">{apt.services?.name} · {apt.barbers?.name}</p>
-                        {apt.notes && <p className="text-gray-500 text-xs mt-1">{apt.notes}</p>}
-                      </div>
+            {appointments.length === 0 ? (
+              <div className="empty-state">Sin citas para esta fecha</div>
+            ) : (
+              <div className="apt-list">
+                <div className="section-label">{appointments.length} cita{appointments.length !== 1 ? 's' : ''} encontrada{appointments.length !== 1 ? 's' : ''}</div>
+                {appointments.map(apt => (
+                  <div key={apt.id} className="apt-card">
+                    <div className="apt-time-block">
+                      <div className="apt-time">{apt.time}</div>
+                      <div className="apt-date">{apt.date}</div>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_COLORS[apt.status]}`}>
+                    <div className="apt-divider" />
+                    <div className="apt-info">
+                      <div className="apt-client">{apt.clients?.name}</div>
+                      <div className="apt-service">
+                        {apt.services?.name}{apt.barbers?.name ? ` · ${apt.barbers.name}` : ''}
+                      </div>
+                      {apt.notes && <div className="apt-notes">{apt.notes}</div>}
+                    </div>
+                    <div className="apt-actions">
+                      <span className={`status-badge ${STATUS_CLASS[apt.status]}`}>
                         {STATUS_LABELS[apt.status]}
                       </span>
-                      <span className="text-amber-400 font-bold">${apt.services?.price}</span>
+                      <span className="apt-price">${apt.services?.price || 0}</span>
                       {apt.status === 'pending' && (
                         <>
-                          <button onClick={() => changeStatus(apt.id, 'confirmed')} title="Confirmar"
-                            className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40 transition-colors">
-                            <Check size={16} />
+                          <button className="action-btn confirm" title="Confirmar" onClick={() => changeStatus(apt.id, 'confirmed')}>
+                            <Check size={15} />
                           </button>
-                          <button onClick={() => changeStatus(apt.id, 'completed')} title="Completar"
-                            className="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/40 transition-colors">
-                            <TrendingUp size={16} />
+                          <button className="action-btn complete" title="Completar" onClick={() => changeStatus(apt.id, 'completed')}>
+                            <ChevronRight size={15} />
                           </button>
-                          <button onClick={() => changeStatus(apt.id, 'cancelled')} title="Cancelar"
-                            className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/40 transition-colors">
-                            <X size={16} />
+                          <button className="action-btn cancel" title="Cancelar" onClick={() => changeStatus(apt.id, 'cancelled')}>
+                            <X size={15} />
                           </button>
                         </>
                       )}
                       {apt.status === 'confirmed' && (
-                        <button onClick={() => changeStatus(apt.id, 'completed')} title="Marcar como completada"
-                          className="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/40 transition-colors">
-                          <Check size={16} />
+                        <button className="action-btn complete" title="Marcar completada" onClick={() => changeStatus(apt.id, 'completed')}>
+                          <Check size={15} />
                         </button>
                       )}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Tab: Clientes */}
-        {tab === 1 && (
-          <div className="space-y-3">
-            {clients.length === 0 ? (
-              <p className="text-gray-500 text-center py-12">No hay clientes registrados</p>
-            ) : (
-              clients.map(client => (
-                <div key={client.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center text-gray-900 font-bold">
-                        {client.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{client.name}</p>
-                        <p className="text-gray-400 text-sm">{client.phone}</p>
-                      </div>
-                    </div>
-                    <span className="text-gray-500 text-sm">
-                      {client.appointments?.length || 0} visitas
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )}
 
-        {/* Tab: Servicios */}
+        {/* Clientes */}
+        {tab === 1 && (
+          <div className="apt-list">
+            {clients.length === 0 ? (
+              <div className="empty-state">Sin clientes registrados</div>
+            ) : (
+              <>
+                <div className="section-label">{clients.length} cliente{clients.length !== 1 ? 's' : ''}</div>
+                {clients.map(c => (
+                  <div key={c.id} className="client-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className="client-avatar">{c.name.charAt(0).toUpperCase()}</div>
+                      <div>
+                        <div className="client-name">{c.name}</div>
+                        <div className="client-phone">{c.phone}</div>
+                      </div>
+                    </div>
+                    <div className="client-visits">
+                      <span>{c.appointments?.length || 0}</span>
+                      visitas
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Servicios */}
         {tab === 2 && (
           <div>
             <NewServiceForm onCreated={s => setServices(sv => [...sv, s])} />
-            <div className="space-y-3 mt-6">
+            <div className="apt-list">
+              {services.length > 0 && <div className="section-label">{services.length} servicios</div>}
               {services.map(s => (
-                <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex justify-between items-center">
+                <div key={s.id} className="service-card-admin">
                   <div>
-                    <p className="font-semibold">{s.name}</p>
-                    <p className="text-gray-400 text-sm">{s.duration_minutes} min · {s.description}</p>
+                    <div className="service-name-admin">{s.name}</div>
+                    <div className="service-meta">{s.duration_minutes} min{s.description ? ` · ${s.description}` : ''}</div>
                   </div>
-                  <span className="text-amber-400 font-bold text-lg">${s.price}</span>
+                  <div className="service-price-admin">${s.price}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Tab: Barberos */}
+        {/* Barberos */}
         {tab === 3 && (
           <div>
             <NewBarberForm onCreated={b => setBarbers(bv => [...bv, b])} />
-            <div className="space-y-3 mt-6">
+            <div className="apt-list">
+              {barbers.length > 0 && <div className="section-label">{barbers.length} barberos</div>}
               {barbers.map(b => (
-                <div key={b.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-gray-900 font-black text-xl">
-                    {b.name.charAt(0)}
-                  </div>
+                <div key={b.id} className="barber-card">
+                  <div className="barber-avatar">{b.name.charAt(0).toUpperCase()}</div>
                   <div>
-                    <p className="font-semibold">{b.name}</p>
-                    <p className="text-gray-400 text-sm">{b.bio}</p>
+                    <div className="barber-name">{b.name}</div>
+                    {b.bio && <div className="barber-bio">{b.bio}</div>}
                   </div>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
-    </div>
-  )
-}
-
-function StatCard({ icon, label, value, color }) {
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center gap-4">
-      <div className={`${color}`}>{icon}</div>
-      <div>
-        <p className="text-gray-400 text-sm">{label}</p>
-        <p className="text-2xl font-bold">{value}</p>
-      </div>
+      </main>
     </div>
   )
 }
@@ -256,7 +254,7 @@ function NewServiceForm({ onCreated }) {
       const created = await createService({
         ...form,
         price: Number(form.price),
-        duration_minutes: Number(form.duration_minutes)
+        duration_minutes: Number(form.duration_minutes),
       })
       onCreated(created)
       setForm({ name: '', description: '', price: '', duration_minutes: '' })
@@ -268,22 +266,23 @@ function NewServiceForm({ onCreated }) {
     }
   }
 
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
   return (
-    <form onSubmit={submit} className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-      <h3 className="font-semibold mb-4 text-amber-400">+ Nuevo servicio</h3>
-      <div className="grid grid-cols-2 gap-3">
-        <input required placeholder="Nombre" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 col-span-2" />
-        <input placeholder="Descripción" value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 col-span-2" />
-        <input required type="number" placeholder="Precio" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400" />
-        <input required type="number" placeholder="Duración (min)" value={form.duration_minutes} onChange={e => setForm(f => ({...f, duration_minutes: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400" />
+    <form onSubmit={submit} className="admin-form">
+      <div className="admin-form-title">✦ Nuevo servicio</div>
+      <div className="admin-form-grid">
+        <input required className="admin-input span-2" placeholder="Nombre del servicio"
+          value={form.name} onChange={e => set('name', e.target.value)} />
+        <input className="admin-input span-2" placeholder="Descripción (opcional)"
+          value={form.description} onChange={e => set('description', e.target.value)} />
+        <input required type="number" className="admin-input" placeholder="Precio ($)"
+          value={form.price} onChange={e => set('price', e.target.value)} />
+        <input required type="number" className="admin-input" placeholder="Duración (min)"
+          value={form.duration_minutes} onChange={e => set('duration_minutes', e.target.value)} />
       </div>
-      <button type="submit" disabled={loading}
-        className="mt-4 bg-amber-400 text-gray-900 font-bold px-6 py-2 rounded-lg hover:bg-amber-300 disabled:opacity-60">
-        {loading ? 'Creando...' : 'Crear servicio'}
+      <button type="submit" disabled={loading} className="admin-form-btn">
+        {loading ? 'Creando...' : '✦ Crear servicio'}
       </button>
     </form>
   )
@@ -308,18 +307,19 @@ function NewBarberForm({ onCreated }) {
     }
   }
 
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
   return (
-    <form onSubmit={submit} className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-      <h3 className="font-semibold mb-4 text-amber-400">+ Nuevo barbero</h3>
-      <div className="grid gap-3">
-        <input required placeholder="Nombre del barbero" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400" />
-        <input placeholder="Bio (especialidad, experiencia...)" value={form.bio} onChange={e => setForm(f => ({...f, bio: e.target.value}))}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400" />
+    <form onSubmit={submit} className="admin-form">
+      <div className="admin-form-title">✦ Nuevo barbero</div>
+      <div className="admin-form-grid single">
+        <input required className="admin-input" placeholder="Nombre del barbero"
+          value={form.name} onChange={e => set('name', e.target.value)} />
+        <input className="admin-input" placeholder="Especialidad o bio (opcional)"
+          value={form.bio} onChange={e => set('bio', e.target.value)} />
       </div>
-      <button type="submit" disabled={loading}
-        className="mt-4 bg-amber-400 text-gray-900 font-bold px-6 py-2 rounded-lg hover:bg-amber-300 disabled:opacity-60">
-        {loading ? 'Creando...' : 'Crear barbero'}
+      <button type="submit" disabled={loading} className="admin-form-btn">
+        {loading ? 'Creando...' : '✦ Crear barbero'}
       </button>
     </form>
   )
