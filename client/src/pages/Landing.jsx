@@ -67,7 +67,7 @@ function Navbar() {
   return (
     <nav className={`famy-nav ${scrolled ? 'scrolled' : ''}`}>
       <a href="#inicio" className="logo" onClick={e => { e.preventDefault(); scroll('#inicio') }}>
-        <div className="logo-icon">✦</div>
+        <img src="/famy-logo.png" alt="Famy Barber Club" className="logo-img" />
         <div>
           <div className="logo-text">FAMY</div>
           <div className="logo-sub">Barber Club</div>
@@ -95,6 +95,9 @@ function Hero() {
   return (
     <section id="inicio" className="hero-section">
       <Particles />
+      <div className="hero-logo-wrap">
+        <img src="/famy-logo.png" alt="Famy Barber Club" className="hero-logo" />
+      </div>
       <div className="hero-badge">Est. 2024 · Premium Barbershop</div>
       <h1 className="hero-title">
         <span className="line-1">Más que un corte,</span>
@@ -432,6 +435,7 @@ function Footer() {
     <footer className="famy-footer">
       <div className="footer-top">
         <div className="footer-brand">
+          <img src="/famy-logo.png" alt="Famy Barber Club" className="footer-logo" />
           <div className="logo-text">FAMY</div>
           <div className="logo-sub">Barber Club</div>
           <p>Más que una barbería, una experiencia de distinción y estilo. Tu imagen, nuestra pasión.</p>

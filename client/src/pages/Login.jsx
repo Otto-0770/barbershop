@@ -76,12 +76,12 @@ export default function Login() {
         }} />
 
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{
-            width: '64px', height: '64px', border: '2px solid #D4AF37',
-            borderRadius: '50%', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: '28px', margin: '0 auto 16px',
-            background: 'rgba(212,175,55,0.05)',
-          }}>✦</div>
+          <img src="/famy-logo.png" alt="Famy Barber Club" style={{
+            width: '90px', height: '90px', borderRadius: '50%',
+            objectFit: 'cover', border: '2px solid #D4AF37',
+            margin: '0 auto 16px', display: 'block',
+            boxShadow: '0 0 30px rgba(212,175,55,0.3)',
+          }} />
           <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '3px', color: '#D4AF37' }}>FAMY</div>
           <div style={{ fontSize: '10px', letterSpacing: '4px', color: '#6B7280', marginBottom: '8px' }}>BARBER CLUB</div>
           <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Panel de Administración</div>
