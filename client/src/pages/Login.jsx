@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { login } from '../api'
@@ -8,6 +8,14 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&display=swap'
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+    return () => document.head.removeChild(link)
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -30,7 +38,7 @@ export default function Login() {
       minHeight: '100vh',
       background: 'radial-gradient(ellipse at 50% 40%, rgba(63,107,58,0.12) 0%, transparent 60%), #0F1115',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Montserrat', sans-serif", padding: '20px'
+      fontFamily: "'Playfair Display', 'Times New Roman', serif", padding: '20px'
     }}>
       <style>{`
         @keyframes particle-float {
@@ -104,7 +112,7 @@ export default function Login() {
                   width: '100%', padding: '14px 48px 14px 16px',
                   background: '#1E232B', border: '1px solid rgba(212,175,55,0.2)',
                   borderRadius: '8px', color: '#fff',
-                  fontFamily: "'Montserrat', sans-serif", fontSize: '14px',
+                  fontFamily: "'Playfair Display', 'Times New Roman', serif", fontSize: '14px',
                   outline: 'none', boxSizing: 'border-box',
                   transition: 'border-color 0.3s, box-shadow 0.3s',
                 }}
@@ -121,7 +129,7 @@ export default function Login() {
           <button type="submit" disabled={loading} className="login-btn" style={{
             width: '100%', padding: '16px',
             background: loading ? 'rgba(212,175,55,0.4)' : 'linear-gradient(135deg, #D4AF37, #A08020)',
-            color: '#0F1115', fontFamily: "'Montserrat', sans-serif",
+            color: '#0F1115', fontFamily: "'Playfair Display', 'Times New Roman', serif",
             fontSize: '12px', fontWeight: 800, letterSpacing: '3px',
             textTransform: 'uppercase', border: 'none', borderRadius: '8px',
             cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.3s',
