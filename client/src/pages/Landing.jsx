@@ -95,9 +95,6 @@ function Hero() {
   return (
     <section id="inicio" className="hero-section">
       <Particles />
-      <div className="hero-logo-wrap">
-        <img src="/famy-logo.png" alt="Famy Barber Club" className="hero-logo" />
-      </div>
       <div className="hero-badge">Est. 2024 · Premium Barbershop</div>
       <h1 className="hero-title">
         <span className="line-1">Más que un corte,</span>
@@ -488,7 +485,7 @@ export default function Landing() {
   useEffect(() => {
     // Google Fonts
     const link = document.createElement('link')
-    link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap'
+    link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap'
     link.rel = 'stylesheet'
     document.head.appendChild(link)
     return () => document.head.removeChild(link)

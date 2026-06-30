@@ -14,7 +14,7 @@
 
 /* ── RESET ── */
 .landing * { box-sizing: border-box; margin: 0; padding: 0; }
-.landing { font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+.landing { font-family: 'Playfair Display', 'Times New Roman', serif; background: var(--black); color: var(--white); overflow-x: hidden; }
 
 /* ── ANIMACIONES ── */
 @keyframes fadeInUp {
@@ -143,8 +143,9 @@
 /* ── HERO ── */
 .hero-section {
   min-height: 100vh;
-  background: radial-gradient(ellipse at 50% 60%, rgba(63,107,58,0.12) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 50% 60%, rgba(63,107,58,0.22) 0%, transparent 60%),
               radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 10% 80%, rgba(63,107,58,0.12) 0%, transparent 50%),
               var(--black);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   position: relative; overflow: hidden; text-align: center; padding: 120px 20px 60px;
@@ -196,17 +197,17 @@
   background: transparent; color: var(--white);
   padding: 16px 40px; border-radius: 4px;
   font-weight: 600; font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
-  text-decoration: none; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;
+  text-decoration: none; border: 1px solid rgba(63,107,58,0.7); cursor: pointer;
   transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
 }
-.btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-3px); }
+.btn-outline:hover { border-color: var(--green-light); color: var(--green-light); background: rgba(63,107,58,0.12); transform: translateY(-3px); }
 .hero-scroll {
   position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   animation: float 2s ease-in-out infinite;
 }
 .hero-scroll span { font-size: 10px; letter-spacing: 3px; color: var(--gray); text-transform: uppercase; }
-.hero-scroll-line { width: 1px; height: 50px; background: linear-gradient(to bottom, var(--gold), transparent); }
+.hero-scroll-line { width: 1px; height: 50px; background: linear-gradient(to bottom, var(--green-light), transparent); }
 .hero-stats {
   display: flex; gap: 60px; margin-top: 80px; flex-wrap: wrap; justify-content: center;
   animation: fadeInUp 0.8s ease 0.8s both;
@@ -239,7 +240,7 @@
 }
 
 /* ── ABOUT ── */
-.about-section { background: var(--black-2); }
+.about-section { background: linear-gradient(160deg, rgba(63,107,58,0.10) 0%, transparent 40%), var(--black-2); }
 .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; margin: 0 auto; align-items: center; }
 .about-image-wrap { position: relative; }
 .about-image {
@@ -269,13 +270,13 @@
   padding: 20px; border: 1px solid rgba(212,175,55,0.15);
   border-radius: 8px; transition: all 0.3s;
 }
-.about-feat:hover { border-color: var(--gold); background: rgba(212,175,55,0.05); transform: translateY(-4px); }
+.about-feat:hover { border-color: var(--green-light); background: rgba(63,107,58,0.10); transform: translateY(-4px); }
 .about-feat-icon { font-size: 24px; flex-shrink: 0; }
 .about-feat h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
 .about-feat p { font-size: 12px; color: var(--gray); line-height: 1.6; }
 
 /* ── SERVICES ── */
-.services-section { background: var(--black); }
+.services-section { background: radial-gradient(ellipse at 70% 50%, rgba(63,107,58,0.10) 0%, transparent 55%), var(--black); }
 .services-header { text-align: center; max-width: 600px; margin: 0 auto 70px; }
 .services-header .section-tag::before { left: 50%; transform: translateX(-20px); display: none; }
 .services-header .divider { margin: 24px auto; }
@@ -309,7 +310,7 @@
 }
 
 /* ── GALLERY ── */
-.gallery-section { background: var(--black-2); }
+.gallery-section { background: linear-gradient(135deg, rgba(63,107,58,0.08) 0%, transparent 50%), var(--black-2); }
 .gallery-header { max-width: 600px; margin-bottom: 60px; }
 .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto auto; gap: 16px; max-width: 1200px; margin: 0 auto; }
 .gallery-item {
@@ -350,7 +351,9 @@
 
 /* ── BOOKING ── */
 .booking-section {
-  background: radial-gradient(ellipse at 50% 0%, rgba(63,107,58,0.1), transparent 60%), var(--black);
+  background: radial-gradient(ellipse at 50% 0%, rgba(63,107,58,0.20), transparent 60%),
+              radial-gradient(ellipse at 100% 100%, rgba(63,107,58,0.08), transparent 50%),
+              var(--black);
 }
 .booking-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start; }
 .booking-info h2 { margin-bottom: 20px; }
@@ -377,7 +380,7 @@
 .form-field select {
   background: var(--black-3); border: 1px solid rgba(212,175,55,0.15);
   border-radius: 6px; padding: 14px 16px; color: var(--white);
-  font-family: 'Montserrat', sans-serif; font-size: 14px;
+  font-family: 'Playfair Display', 'Times New Roman', serif; font-size: 14px;
   transition: border-color 0.3s; outline: none;
 }
 .form-field input:focus,
@@ -386,7 +389,7 @@
 .form-submit {
   width: 100%; margin-top: 28px; padding: 18px;
   background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  color: var(--black); font-family: 'Montserrat', sans-serif;
+  color: var(--black); font-family: 'Playfair Display', 'Times New Roman', serif;
   font-size: 13px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
   border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s;
 }
@@ -394,7 +397,7 @@
 .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* ── TESTIMONIALS ── */
-.testimonials-section { background: var(--black-2); }
+.testimonials-section { background: linear-gradient(180deg, rgba(63,107,58,0.08) 0%, transparent 60%), var(--black-2); }
 .testimonials-header { text-align: center; max-width: 500px; margin: 0 auto 70px; }
 .testimonials-header .divider { margin: 20px auto; }
 .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto; }
@@ -418,7 +421,7 @@
 .author-detail { font-size: 12px; color: var(--gray); }
 
 /* ── CONTACT ── */
-.contact-section { background: var(--black); }
+.contact-section { background: radial-gradient(ellipse at 0% 50%, rgba(63,107,58,0.12) 0%, transparent 50%), var(--black); }
 .contact-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.5fr; gap: 80px; }
 .contact-info h2 { margin-bottom: 20px; }
 .contact-info .section-desc { margin-bottom: 40px; }
@@ -442,7 +445,8 @@
 
 /* ── FOOTER ── */
 .famy-footer {
-  background: var(--black-3); border-top: 1px solid rgba(212,175,55,0.15);
+  background: linear-gradient(160deg, rgba(63,107,58,0.08) 0%, transparent 40%), var(--black-3);
+  border-top: 1px solid rgba(63,107,58,0.25);
   padding: 60px 40px 30px;
 }
 .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; max-width: 1200px; margin: 0 auto 50px; }
