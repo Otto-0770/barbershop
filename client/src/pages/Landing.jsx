@@ -173,12 +173,18 @@ function About() {
 
 // ── Services ────────────────────────────────────────────────────────────────
 const STATIC_SERVICES = [
-  { icon: '✂️', name: 'Corte Clásico', desc: 'Corte tradicional con tijera y máquina. El estilo atemporal que nunca pasa de moda.', price: 15, duration: '30 min' },
-  { icon: '👑', name: 'Corte Premium', desc: 'Experiencia completa con masaje de cuero cabelludo, lavado y estilizado final.', price: 30, duration: '60 min' },
-  { icon: '🪒', name: 'Barba y Perfilado', desc: 'Arreglo y perfilado de barba con navaja de precisión y toalla caliente.', price: 15, duration: '30 min' },
-  { icon: '⚗️', name: 'Afeitado Tradicional', desc: 'Afeitado clásico con navaja, crema artesanal y toallas calientes. Lujo puro.', price: 20, duration: '45 min' },
-  { icon: '💧', name: 'Lavado Capilar', desc: 'Tratamiento de hidratación profunda y masaje relajante para el cuero cabelludo.', price: 12, duration: '20 min' },
-  { icon: '🎨', name: 'Diseño de Barba', desc: 'Escultura artística de la barba, desde estilos minimalistas hasta diseños elaborados.', price: 25, duration: '45 min' },
+  { icon: '✂️', name: 'Corte adulto + lavado + facial',          desc: 'Corte completo con lavado y tratamiento facial. La experiencia completa para el caballero moderno.',  price: 1000, desde: false },
+  { icon: '👦', name: 'Corte joven + lavado + facial',            desc: 'Para mayores de 10 años. Corte, lavado y facial con atención especializada para jóvenes.',           price: 800,  desde: false },
+  { icon: '👶', name: 'Corte infantil + lavado',                  desc: 'Para niños hasta 10 años. Corte cuidadoso con lavado incluido en un ambiente cómodo y divertido.',   price: 700,  desde: false },
+  { icon: '〽️', name: 'Cerquillo',                                desc: 'Arreglo preciso del cerquillo para mantener tu estilo fresco entre cortes.',                         price: 700,  desde: false },
+  { icon: '🪒', name: 'Afeitado tradicional + cerquillo',         desc: 'Afeitado clásico con navaja y toalla caliente, más arreglo de cerquillo incluido.',                  price: 800,  desde: false },
+  { icon: '🧔', name: 'Arreglo de barba',                         desc: 'Modelado y perfilado de barba con navaja de precisión para un look impecable.',                      price: 700,  desde: false },
+  { icon: '👑', name: 'Corte adulto + barba',                     desc: 'La combinación perfecta: corte completo más arreglo total de barba en una sola visita.',              price: 1300, desde: false },
+  { icon: '✦',  name: 'Perfilado de barba',                       desc: 'Definición de líneas y contorno de barba para mantener el estilo entre visitas.',                    price: 500,  desde: false },
+  { icon: '👁️', name: 'Cejas',                                    desc: 'Depilación y diseño de cejas para un acabado limpio y definido.',                                    price: 300,  desde: false },
+  { icon: '🎨', name: 'Diseño o líneas en el corte',              desc: 'Grabados, líneas y diseños artísticos personalizados en el corte.',                                  price: 200,  desde: true  },
+  { icon: '💧', name: 'Tratamiento capilar',                      desc: 'Hidratación profunda y masaje relajante del cuero cabelludo con productos premium.',                  price: 1000, desde: false },
+  { icon: '⚗️', name: 'Camuflaje de canas',                       desc: 'Técnica especializada para disimular las canas de forma natural y discreta.',                        price: 1200, desde: true  },
 ]
 
 function Services() {
@@ -192,12 +198,15 @@ function Services() {
       </div>
       <div className="services-grid">
         {STATIC_SERVICES.map((s, i) => (
-          <div key={i} className="service-card reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div className="service-num">0{i + 1}</div>
+          <div key={i} className="service-card reveal" style={{ transitionDelay: `${i * 0.08}s` }}>
+            <div className="service-num">{String(i + 1).padStart(2, '0')}</div>
             <span className="service-icon">{s.icon}</span>
             <div className="service-name">{s.name}</div>
             <div className="service-desc">{s.desc}</div>
-            <div className="service-price">${s.price} <span>· {s.duration}</span></div>
+            <div className="service-price">
+              {s.desde && <span style={{ fontSize: '14px', fontWeight: 400 }}>Desde </span>}
+              RD${s.price.toLocaleString()}
+            </div>
           </div>
         ))}
       </div>
@@ -323,7 +332,7 @@ function Booking() {
                 <select value={form.service} onChange={e => set('service', e.target.value)}>
                   <option value="">Selecciona un servicio</option>
                   {STATIC_SERVICES.map((s, i) => (
-                    <option key={i} value={s.name}>{s.name} — ${s.price}</option>
+                    <option key={i} value={s.name}>{s.name} — {s.desde ? 'Desde ' : ''}RD${s.price.toLocaleString()}</option>
                   ))}
                 </select>
               </div>
