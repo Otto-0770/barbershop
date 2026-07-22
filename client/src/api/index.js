@@ -43,6 +43,8 @@ export const updateBarber = (id, data) => api.put(`/barbers/${id}`, data).then(r
 // Citas (protegidas)
 export const getAppointments = (date) =>
   api.get('/appointments', { params: date ? { date } : {} }).then(r => r.data)
+export const getTakenSlots = (date) =>
+  api.get('/appointments/taken-slots', { params: { date } }).then(r => r.data)
 export const createAppointment = (data) => api.post('/appointments', data).then(r => r.data)
 export const updateAppointmentStatus = (id, status) =>
   api.patch(`/appointments/${id}/status`, { status }).then(r => r.data)

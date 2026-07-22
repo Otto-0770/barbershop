@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { getServices, getBarbers, createAppointment } from '../api'
+import { getServices, getBarbers, createAppointment, getTakenSlots } from '../api'
 import '../landing.css'
 
 // ── Scroll reveal hook ──────────────────────────────────────────────────────
@@ -262,14 +262,34 @@ function Gallery() {
   )
 }
 
+const ALL_TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
+                   '14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30']
+
 // ── Booking Form ─────────────────────────────────────────────────────────────
 function Booking({ services }) {
   const [loading, setLoading] = useState(false)
+  const [takenSlots, setTakenSlots] = useState([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service: '', date: '', time: ''
   })
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleDateChange = async (date) => {
+    set('date', date)
+    set('time', '')
+    if (!date) return
+    setLoadingSlots(true)
+    try {
+      const taken = await getTakenSlots(date)
+      setTakenSlots(taken)
+    } catch {
+      setTakenSlots([])
+    } finally {
+      setLoadingSlots(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -277,28 +297,31 @@ function Booking({ services }) {
       toast.error('Por favor completa todos los campos')
       return
     }
+    if (takenSlots.includes(form.time)) {
+      toast.error('Ese horario ya está ocupado, elige otro')
+      return
+    }
     setLoading(true)
+    const selectedService = services.find(s => s.name === form.service)
     try {
       await createAppointment({
-        barber_id: null,
-        service_id: null,
+        service_id: selectedService?.id || null,
         date: form.date,
         time: form.time,
         client_name: form.name,
         client_phone: form.phone,
-        notes: `Servicio: ${form.service}. Email: ${form.email}`,
+        notes: form.email ? `Email: ${form.email}` : undefined,
       })
-      toast.success('¡Reserva confirmada! Te contactaremos pronto.')
+      toast.success('¡Reserva enviada! Te contactaremos para confirmar.')
       setForm({ name: '', phone: '', email: '', service: '', date: '', time: '' })
-    } catch {
-      toast.error('Hubo un error. Por favor llámanos directamente.')
+      setTakenSlots([])
+    } catch (err) {
+      const msg = err?.response?.data?.error
+      toast.error(msg === 'Ese horario ya está reservado' ? 'Ese horario acaba de ser tomado, elige otro' : 'Hubo un error. Por favor llámanos directamente.')
     } finally {
       setLoading(false)
     }
   }
-
-  const TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
-                  '14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30']
 
   return (
     <section id="reservas" className="booking-section section">
@@ -355,18 +378,26 @@ function Booking({ services }) {
               </div>
               <div className="form-field">
                 <label>Fecha</label>
-                <input type="date" min={new Date().toISOString().split('T')[0]} value={form.date} onChange={e => set('date', e.target.value)} />
+                <input type="date" min={new Date().toISOString().split('T')[0]} value={form.date}
+                  onChange={e => handleDateChange(e.target.value)} />
               </div>
               <div className="form-field">
-                <label>Hora</label>
-                <select value={form.time} onChange={e => set('time', e.target.value)}>
-                  <option value="">Selecciona hora</option>
-                  {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
+                <label>Hora {loadingSlots && <span style={{ color: 'var(--gold)', fontSize: '11px' }}>Cargando...</span>}</label>
+                <select value={form.time} onChange={e => set('time', e.target.value)} disabled={!form.date || loadingSlots}>
+                  <option value="">{form.date ? 'Selecciona hora' : 'Primero elige fecha'}</option>
+                  {ALL_TIMES.map(t => {
+                    const taken = takenSlots.includes(t)
+                    return (
+                      <option key={t} value={t} disabled={taken}>
+                        {t}{taken ? ' — Ocupado' : ''}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>
             <button type="submit" className="form-submit" disabled={loading}>
-              {loading ? 'Confirmando reserva...' : '✦ Confirmar Reserva'}
+              {loading ? 'Enviando reserva...' : '✦ Confirmar Reserva'}
             </button>
           </form>
         </div>
@@ -498,7 +529,7 @@ function Footer({ services }) {
       </div>
       <div className="footer-bottom">
         <p>© 2026 <span>Famy Barber Club</span>. Todos los derechos reservados.</p>
-        <p>Diseñado con <span>✦</span> para la excelencia</p>
+        <p>Diseñado con <span>✦</span> para la excelencia &nbsp;·&nbsp; <a href="/login" style={{ color: 'rgba(255,255,255,0.18)', fontSize: '11px', textDecoration: 'none' }} onMouseEnter={e => e.target.style.color='rgba(212,175,55,0.5)'} onMouseLeave={e => e.target.style.color='rgba(255,255,255,0.18)'}>Admin</a></p>
       </div>
     </footer>
   )

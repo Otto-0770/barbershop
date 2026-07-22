@@ -24,23 +24,41 @@ router.get('/', async (req, res) => {
   res.json(data)
 })
 
+// GET /api/appointments/taken-slots?date=YYYY-MM-DD — slots ocupados (público)
+router.get('/taken-slots', async (req, res) => {
+  const { date } = req.query
+  if (!date) return res.status(400).json({ error: 'Se requiere la fecha' })
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('time')
+    .eq('date', date)
+    .in('status', ['pending', 'confirmed'])
+
+  if (error) return res.status(500).json({ error: error.message })
+  const times = [...new Set(data.map(a => a.time))]
+  res.json(times)
+})
+
 // POST /api/appointments — reservar una cita (cliente público)
 router.post('/', async (req, res) => {
   const { barber_id, service_id, date, time, client_name, client_phone, notes } = req.body
 
-  if (!barber_id || !service_id || !date || !time || !client_name || !client_phone) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' })
+  if (!date || !time || !client_name || !client_phone) {
+    return res.status(400).json({ error: 'Nombre, teléfono, fecha y hora son requeridos' })
   }
 
-  // Verificar que el slot no esté ocupado
-  const { data: existing } = await supabase
+  // Verificar que el slot no esté ocupado (para cualquier barbero si no se especifica)
+  let slotQuery = supabase
     .from('appointments')
     .select('id')
-    .eq('barber_id', barber_id)
     .eq('date', date)
     .eq('time', time)
     .in('status', ['pending', 'confirmed'])
-    .single()
+
+  if (barber_id) slotQuery = slotQuery.eq('barber_id', barber_id)
+
+  const { data: existing } = await slotQuery.single()
 
   if (existing) {
     return res.status(409).json({ error: 'Ese horario ya está reservado' })
