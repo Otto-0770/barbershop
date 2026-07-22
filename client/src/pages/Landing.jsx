@@ -192,6 +192,17 @@ const getIcon = (name, isUsd) => {
 }
 
 function Services({ services }) {
+  useEffect(() => {
+    if (services.length === 0) return
+    const els = document.querySelectorAll('#servicios .reveal')
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
+      { threshold: 0.08 }
+    )
+    els.forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [services])
+
   return (
     <section id="servicios" className="services-section section">
       <div className="services-header reveal">
