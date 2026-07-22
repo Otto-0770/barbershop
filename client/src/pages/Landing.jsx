@@ -172,22 +172,26 @@ function About() {
 }
 
 // ── Services ────────────────────────────────────────────────────────────────
-const STATIC_SERVICES = [
-  { icon: '✂️', name: 'Corte adulto + lavado + facial',          desc: 'Corte completo con lavado y tratamiento facial. La experiencia completa para el caballero moderno.',  price: 1000, desde: false },
-  { icon: '👦', name: 'Corte joven + lavado + facial',            desc: 'Para mayores de 10 años. Corte, lavado y facial con atención especializada para jóvenes.',           price: 800,  desde: false },
-  { icon: '👶', name: 'Corte infantil + lavado',                  desc: 'Para niños hasta 10 años. Corte cuidadoso con lavado incluido en un ambiente cómodo y divertido.',   price: 700,  desde: false },
-  { icon: '〽️', name: 'Cerquillo',                                desc: 'Arreglo preciso del cerquillo para mantener tu estilo fresco entre cortes.',                         price: 700,  desde: false },
-  { icon: '🪒', name: 'Afeitado tradicional + cerquillo',         desc: 'Afeitado clásico con navaja y toalla caliente, más arreglo de cerquillo incluido.',                  price: 800,  desde: false },
-  { icon: '🧔', name: 'Arreglo de barba',                         desc: 'Modelado y perfilado de barba con navaja de precisión para un look impecable.',                      price: 700,  desde: false },
-  { icon: '👑', name: 'Corte adulto + barba',                     desc: 'La combinación perfecta: corte completo más arreglo total de barba en una sola visita.',              price: 1300, desde: false },
-  { icon: '✦',  name: 'Perfilado de barba',                       desc: 'Definición de líneas y contorno de barba para mantener el estilo entre visitas.',                    price: 500,  desde: false },
-  { icon: '👁️', name: 'Cejas',                                    desc: 'Depilación y diseño de cejas para un acabado limpio y definido.',                                    price: 300,  desde: false },
-  { icon: '🎨', name: 'Diseño o líneas en el corte',              desc: 'Grabados, líneas y diseños artísticos personalizados en el corte.',                                  price: 200,  desde: true  },
-  { icon: '💧', name: 'Tratamiento capilar',                      desc: 'Hidratación profunda y masaje relajante del cuero cabelludo con productos premium.',                  price: 1000, desde: false },
-  { icon: '⚗️', name: 'Camuflaje de canas',                       desc: 'Técnica especializada para disimular las canas de forma natural y discreta.',                        price: 1200, desde: true  },
-]
+const SERVICE_ICONS = {
+  'corte adulto + lavado + facial': '✂️',
+  'corte joven + lavado + facial':  '👦',
+  'corte infantil + lavado':        '👶',
+  'cerquillo':                      '〽️',
+  'afeitado tradicional + cerquillo': '🪒',
+  'arreglo de barba':               '🧔',
+  'corte adulto + barba':           '👑',
+  'perfilado de barba':             '✦',
+  'cejas':                          '👁️',
+  'diseño o líneas en el corte':    '🎨',
+  'tratamiento capilar':            '💧',
+  'camuflaje de canas':             '⚗️',
+}
+const getIcon = (name, isUsd) => {
+  if (isUsd) return '🏠'
+  return SERVICE_ICONS[name.toLowerCase()] || '✂️'
+}
 
-function Services() {
+function Services({ services }) {
   return (
     <section id="servicios" className="services-section section">
       <div className="services-header reveal">
@@ -197,15 +201,16 @@ function Services() {
         <p className="section-desc">Servicios diseñados para hombres que valoran su imagen y apariencia.</p>
       </div>
       <div className="services-grid">
-        {STATIC_SERVICES.map((s, i) => (
-          <div key={i} className="service-card reveal" style={{ transitionDelay: `${i * 0.08}s` }}>
+        {services.map((s, i) => (
+          <div key={s.id} className={`service-card reveal${s.is_usd ? ' service-card-home' : ''}`} style={{ transitionDelay: `${i * 0.08}s` }}>
             <div className="service-num">{String(i + 1).padStart(2, '0')}</div>
-            <span className="service-icon">{s.icon}</span>
-            <div className="service-name">{s.name}</div>
-            <div className="service-desc">{s.desc}</div>
+            <span className="service-icon">{getIcon(s.name, s.is_usd)}</span>
+            {s.is_usd && <span className="service-home-badge">A domicilio</span>}
+            <div className="service-name">{s.name.replace(/ a domicilio$/i, '')}</div>
+            <div className="service-desc">{s.description}</div>
             <div className="service-price">
-              {s.desde && <span style={{ fontSize: '14px', fontWeight: 400 }}>Desde </span>}
-              RD${s.price.toLocaleString()}
+              {s.price_from && <span style={{ fontSize: '14px', fontWeight: 400 }}>Desde </span>}
+              {s.is_usd ? `US$${Number(s.price)}` : `RD$${Number(s.price).toLocaleString()}`}
             </div>
           </div>
         ))}
@@ -247,8 +252,7 @@ function Gallery() {
 }
 
 // ── Booking Form ─────────────────────────────────────────────────────────────
-function Booking() {
-  const [services, setServices] = useState(STATIC_SERVICES.map((s, i) => ({ id: i + 1, ...s })))
+function Booking({ services }) {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service: '', date: '', time: ''
@@ -331,8 +335,10 @@ function Booking() {
                 <label>Servicio</label>
                 <select value={form.service} onChange={e => set('service', e.target.value)}>
                   <option value="">Selecciona un servicio</option>
-                  {STATIC_SERVICES.map((s, i) => (
-                    <option key={i} value={s.name}>{s.name} — {s.desde ? 'Desde ' : ''}RD${s.price.toLocaleString()}</option>
+                  {services.map(s => (
+                    <option key={s.id} value={s.name}>
+                      {s.name} — {s.price_from ? 'Desde ' : ''}{s.is_usd ? `US$${Number(s.price)}` : `RD$${Number(s.price).toLocaleString()}`}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -435,7 +441,7 @@ function Contact() {
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────
-function Footer() {
+function Footer({ services }) {
   const scroll = (href) => document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
   return (
     <footer className="famy-footer">
@@ -460,7 +466,7 @@ function Footer() {
         <div className="footer-col">
           <h4>Servicios</h4>
           <ul>
-            {STATIC_SERVICES.map((s, i) => <li key={i}><a href="#servicios" onClick={e => { e.preventDefault(); scroll('#servicios') }}>{s.name}</a></li>)}
+            {services.map(s => <li key={s.id}><a href="#servicios" onClick={e => { e.preventDefault(); scroll('#servicios') }}>{s.name}</a></li>)}
           </ul>
         </div>
         <div className="footer-col">
@@ -480,7 +486,7 @@ function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>© 2024 <span>Famy Barber Club</span>. Todos los derechos reservados.</p>
+        <p>© 2026 <span>Famy Barber Club</span>. Todos los derechos reservados.</p>
         <p>Diseñado con <span>✦</span> para la excelencia</p>
       </div>
     </footer>
@@ -490,9 +496,9 @@ function Footer() {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Landing() {
   useReveal()
+  const [services, setServices] = useState([])
 
   useEffect(() => {
-    // Google Fonts
     const link = document.createElement('link')
     link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap'
     link.rel = 'stylesheet'
@@ -500,17 +506,21 @@ export default function Landing() {
     return () => document.head.removeChild(link)
   }, [])
 
+  useEffect(() => {
+    getServices().then(setServices).catch(() => {})
+  }, [])
+
   return (
     <div className="landing">
       <Navbar />
       <Hero />
       <About />
-      <Services />
+      <Services services={services} />
       <Gallery />
-      <Booking />
+      <Booking services={services} />
       <Testimonials />
       <Contact />
-      <Footer />
+      <Footer services={services} />
     </div>
   )
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Check, X, LogOut, ChevronRight } from 'lucide-react'
+import { Check, X, LogOut, ChevronRight, Pencil, Save } from 'lucide-react'
 import {
   getAppointments, updateAppointmentStatus,
-  getClients, getServices, getBarbers, createService, createBarber
+  getClients, getServices, getBarbers, createService, updateService, createBarber
 } from '../api'
 import '../admin.css'
 
@@ -206,15 +206,11 @@ export default function Admin() {
           <div>
             <NewServiceForm onCreated={s => setServices(sv => [...sv, s])} />
             <div className="apt-list">
-              {services.length > 0 && <div className="section-label">{services.length} servicios</div>}
+              {services.length > 0 && <div className="section-label">{services.length} servicios — haz clic en ✏ para editar precio</div>}
               {services.map(s => (
-                <div key={s.id} className="service-card-admin">
-                  <div>
-                    <div className="service-name-admin">{s.name}</div>
-                    <div className="service-meta">{s.duration_minutes} min{s.description ? ` · ${s.description}` : ''}</div>
-                  </div>
-                  <div className="service-price-admin">${s.price}</div>
-                </div>
+                <ServiceRow key={s.id} service={s} onUpdated={updated =>
+                  setServices(sv => sv.map(x => x.id === updated.id ? updated : x))
+                } />
               ))}
             </div>
           </div>
@@ -239,6 +235,91 @@ export default function Admin() {
           </div>
         )}
       </main>
+    </div>
+  )
+}
+
+function ServiceRow({ service: s, onUpdated }) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({ name: s.name, price: s.price, description: s.description || '' })
+  const [loading, setLoading] = useState(false)
+
+  const save = async () => {
+    if (!form.name || !form.price) return toast.error('Nombre y precio son requeridos')
+    setLoading(true)
+    try {
+      const updated = await updateService(s.id, {
+        name: form.name,
+        price: Number(form.price),
+        description: form.description,
+        duration_minutes: s.duration_minutes,
+      })
+      onUpdated(updated)
+      setEditing(false)
+      toast.success('Servicio actualizado')
+    } catch {
+      toast.error('Error al guardar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const currency = s.is_usd ? 'US$' : 'RD$'
+
+  if (editing) {
+    return (
+      <div className="service-card-admin editing">
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <input
+            className="admin-input"
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder="Nombre del servicio"
+          />
+          <input
+            className="admin-input"
+            value={form.description}
+            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            placeholder="Descripción (opcional)"
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: 'var(--gold)', fontWeight: 600, whiteSpace: 'nowrap' }}>{currency}</span>
+          <input
+            type="number"
+            className="admin-input"
+            style={{ width: '90px', textAlign: 'right' }}
+            value={form.price}
+            onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+            placeholder="Precio"
+          />
+          <button className="action-btn confirm" title="Guardar" onClick={save} disabled={loading}>
+            <Save size={15} />
+          </button>
+          <button className="action-btn cancel" title="Cancelar" onClick={() => { setEditing(false); setForm({ name: s.name, price: s.price, description: s.description || '' }) }}>
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="service-card-admin">
+      <div>
+        <div className="service-name-admin">{s.name}</div>
+        <div className="service-meta">
+          {s.duration_minutes} min{s.description ? ` · ${s.description}` : ''}
+          {s.is_usd && <span style={{ marginLeft: '8px', color: 'var(--green)', fontSize: '11px', fontWeight: 600 }}>A domicilio</span>}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="service-price-admin">{currency}{Number(s.price).toLocaleString()}</div>
+        <button className="action-btn" title="Editar precio" onClick={() => setEditing(true)}
+          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--gold)' }}>
+          <Pencil size={13} />
+        </button>
+      </div>
     </div>
   )
 }

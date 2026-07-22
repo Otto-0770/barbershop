@@ -52,6 +52,3 @@ export const cancelAppointment = (id) => api.delete(`/appointments/${id}`).then(
 export const getClients = () => api.get('/clients').then(r => r.data)
 export const getClient = (id) => api.get(`/clients/${id}`).then(r => r.data)
 
-export const login = (password) => api.post('/auth/login', { password }).then(r => r.data)
-export const verifyToken = (token) =>
-  api.post('/auth/verify', { token }).then(r => r.data)

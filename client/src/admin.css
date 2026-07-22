@@ -216,9 +216,10 @@
   transition: border-color 0.3s;
 }
 .service-card-admin:hover { border-color: rgba(212,175,55,0.3); }
+.service-card-admin.editing { border-color: rgba(212,175,55,0.5); gap: 16px; align-items: flex-start; }
 .service-name-admin { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .service-meta { font-size: 12px; color: var(--gray); }
-.service-price-admin { font-size: 24px; font-weight: 900; color: var(--gold); }
+.service-price-admin { font-size: 22px; font-weight: 900; color: var(--gold); white-space: nowrap; }
 
 /* ── BARBER CARD ── */
 .barber-card {
