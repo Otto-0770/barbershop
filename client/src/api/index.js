@@ -27,6 +27,9 @@ api.interceptors.response.use(
 export const login = (password) => api.post('/auth/login', { password }).then(r => r.data)
 export const verifyToken = (token) => api.post('/auth/verify', { token }).then(r => r.data)
 
+// Membresías
+export const getMemberships = () => api.get('/memberships').then(r => r.data)
+
 // Servicios
 export const getServices = () => api.get('/services').then(r => r.data)
 export const createService = (data) => api.post('/services', data).then(r => r.data)

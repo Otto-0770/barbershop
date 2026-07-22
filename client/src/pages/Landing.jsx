@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { getServices, getBarbers, createAppointment, getTakenSlots } from '../api'
+import { getServices, getBarbers, createAppointment, getTakenSlots, getMemberships } from '../api'
 import '../landing.css'
 
 // ── Scroll reveal hook ──────────────────────────────────────────────────────
@@ -55,6 +55,7 @@ function Navbar() {
     { href: '#inicio', label: 'Inicio' },
     { href: '#nosotros', label: 'Nosotros' },
     { href: '#servicios', label: 'Servicios' },
+    { href: '#membresias', label: 'Membresías' },
     { href: '#galeria', label: 'Galería' },
     { href: '#contacto', label: 'Contacto' },
   ]
@@ -482,6 +483,73 @@ function Contact() {
   )
 }
 
+// ── Memberships ──────────────────────────────────────────────────────────────
+const MEMBERSHIP_ICONS = {
+  'cerquillo fresh': '✂️',
+  'infantil':        '👶',
+  'joven':           '👦',
+  'básica adulto':   '👤',
+  'barba fresh':     '🧔',
+  'premium':         '👑',
+  'vip':             '✦',
+}
+
+function Memberships({ memberships }) {
+  useEffect(() => {
+    if (memberships.length === 0) return
+    const els = document.querySelectorAll('#membresias .reveal')
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
+      { threshold: 0.08 }
+    )
+    els.forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [memberships])
+
+  if (memberships.length === 0) return null
+
+  const featured = memberships.find(m => m.name.toLowerCase() === 'vip') || memberships[memberships.length - 1]
+
+  return (
+    <section id="membresias" className="memberships-section section">
+      <div className="memberships-header reveal">
+        <div className="section-tag" style={{ paddingLeft: 0 }}>Membresías</div>
+        <h2 className="section-title">Suscríbete y <span>ahorra cada mes.</span></h2>
+        <div className="divider" />
+        <p className="section-desc">Paga una vez al mes y visita la barbería cuando quieras dentro de tu plan.</p>
+      </div>
+      <div className="memberships-grid">
+        {memberships.map((m, i) => {
+          const isVip = m.id === featured.id
+          const icon = MEMBERSHIP_ICONS[m.name.toLowerCase()] || '✦'
+          const benefits = m.includes.split('+').map(b => b.trim())
+          return (
+            <div key={m.id} className={`membership-card reveal${isVip ? ' membership-vip' : ''}`} style={{ transitionDelay: `${i * 0.07}s` }}>
+              {isVip && <div className="membership-badge">⭐ Más popular</div>}
+              <div className="membership-icon">{icon}</div>
+              <div className="membership-name">{m.name}</div>
+              <div className="membership-price">
+                <span className="membership-currency">RD$</span>
+                {Number(m.price).toLocaleString()}
+                <span className="membership-period">/mes</span>
+              </div>
+              <ul className="membership-benefits">
+                {benefits.map((b, j) => (
+                  <li key={j}><span className="benefit-check">✓</span>{b}</li>
+                ))}
+              </ul>
+              <a href="#reservas" className={`membership-btn ${isVip ? 'membership-btn-vip' : ''}`}
+                onClick={e => { e.preventDefault(); document.querySelector('#reservas')?.scrollIntoView({ behavior: 'smooth' }) }}>
+                Reservar ahora
+              </a>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 // ── Footer ────────────────────────────────────────────────────────────────────
 function Footer({ services }) {
   const scroll = (href) => document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
@@ -539,6 +607,7 @@ function Footer({ services }) {
 export default function Landing() {
   useReveal()
   const [services, setServices] = useState([])
+  const [memberships, setMemberships] = useState([])
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -550,6 +619,7 @@ export default function Landing() {
 
   useEffect(() => {
     getServices().then(setServices).catch(() => {})
+    getMemberships().then(setMemberships).catch(() => {})
   }, [])
 
   return (
@@ -559,6 +629,7 @@ export default function Landing() {
       <About />
       <Services services={services} />
       <Gallery />
+      <Memberships memberships={memberships} />
       <Booking services={services} />
       <Testimonials />
       <Contact />
