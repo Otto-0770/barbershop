@@ -402,6 +402,20 @@
 }
 .form-submit:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(212,175,55,0.4); }
 .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.wa-success {
+  margin-top: 20px; padding: 20px; border-radius: 10px;
+  background: rgba(37,211,102,0.08); border: 1px solid rgba(37,211,102,0.3);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.wa-success-text { font-size: 14px; color: #a7f3c0; line-height: 1.6; }
+.wa-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px; border-radius: 8px;
+  background: #25D366; color: #fff;
+  font-size: 14px; font-weight: 800; letter-spacing: 1px;
+  text-decoration: none; transition: background 0.2s;
+}
+.wa-btn:hover { background: #1ebe5d; }
 
 /* ── TESTIMONIALS ── */
 .testimonials-section { background: linear-gradient(180deg, rgba(63,107,58,0.08) 0%, transparent 60%), var(--black-2); }

@@ -266,11 +266,19 @@ function Gallery() {
 const ALL_TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
                    '14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30']
 
+const WA_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '18095087962'
+
+function buildWaLink(phone, message) {
+  const num = phone.replace(/\D/g, '')
+  return `https://wa.me/${num}?text=${encodeURIComponent(message)}`
+}
+
 // ── Booking Form ─────────────────────────────────────────────────────────────
 function Booking({ services }) {
   const [loading, setLoading] = useState(false)
   const [takenSlots, setTakenSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [waLink, setWaLink] = useState(null)
   const [form, setForm] = useState({
     name: '', phone: '', email: '', service: '', date: '', time: ''
   })
@@ -313,7 +321,8 @@ function Booking({ services }) {
         client_phone: form.phone,
         notes: form.email ? `Email: ${form.email}` : undefined,
       })
-      toast.success('¡Reserva enviada! Te contactaremos para confirmar.')
+      const msg = `🔔 Nueva cita desde la web\n\n👤 Cliente: ${form.name}\n📞 Tel: ${form.phone}\n✂️ Servicio: ${form.service}\n📅 Fecha: ${form.date}\n🕐 Hora: ${form.time}`
+      setWaLink(buildWaLink(WA_NUMBER, msg))
       setForm({ name: '', phone: '', email: '', service: '', date: '', time: '' })
       setTakenSlots([])
     } catch (err) {
@@ -401,6 +410,17 @@ function Booking({ services }) {
               {loading ? 'Enviando reserva...' : '✦ Confirmar Reserva'}
             </button>
           </form>
+          {waLink && (
+            <div className="wa-success">
+              <div className="wa-success-text">
+                ✅ ¡Reserva enviada! Toca el botón para notificar al barbero por WhatsApp.
+              </div>
+              <a href={waLink} target="_blank" rel="noopener noreferrer" className="wa-btn"
+                onClick={() => setWaLink(null)}>
+                <span>📱</span> Confirmar por WhatsApp
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </section>

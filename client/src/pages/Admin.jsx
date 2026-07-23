@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Check, X, LogOut, ChevronRight, Pencil, Save } from 'lucide-react'
+import { Check, X, LogOut, ChevronRight, Pencil, Save, MessageCircle } from 'lucide-react'
 import {
   getAppointments, updateAppointmentStatus,
   getClients, getServices, getBarbers, createService, updateService, createBarber
@@ -164,6 +164,18 @@ export default function Admin() {
                         <button className="action-btn complete" title="Marcar completada" onClick={() => changeStatus(apt.id, 'completed')}>
                           <Check size={15} />
                         </button>
+                      )}
+                      {apt.clients?.phone && apt.status !== 'cancelled' && apt.status !== 'completed' && (
+                        <a
+                          className="action-btn"
+                          title="Confirmar por WhatsApp al cliente"
+                          style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.3)', color: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          href={`https://wa.me/${apt.clients.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${apt.clients.name}, te confirmamos tu cita en Famy Barber Club para el ${apt.date} a las ${apt.time}. ¡Te esperamos! ✦`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <MessageCircle size={15} />
+                        </a>
                       )}
                     </div>
                   </div>
