@@ -303,8 +303,18 @@ function Booking({ services, barbers }) {
   })
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-  const slots = getSlotsForDate(form.date)
+  const rawSlots = getSlotsForDate(form.date)
   const isSunday = form.date && new Date(form.date + 'T12:00:00').getDay() === 0
+  const today = new Date().toISOString().split('T')[0]
+  const slots = form.date === today
+    ? rawSlots.filter(({ value }) => {
+        const [h, m] = value.split(':').map(Number)
+        const now = new Date()
+        const slotMin = h * 60 + m
+        const nowMin = now.getHours() * 60 + now.getMinutes() + 30 // 30 min de margen
+        return slotMin > nowMin
+      })
+    : rawSlots
 
   const handleDateChange = async (date) => {
     set('date', date)
