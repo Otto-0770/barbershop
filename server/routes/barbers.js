@@ -76,4 +76,12 @@ router.put('/:id', async (req, res) => {
   res.json(data)
 })
 
+// DELETE /api/barbers/:id — eliminar barbero
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params
+  const { error } = await supabase.from('barbers').delete().eq('id', id)
+  if (error) return res.status(500).json({ error: error.message })
+  res.json({ message: 'Barbero eliminado' })
+})
+
 module.exports = router

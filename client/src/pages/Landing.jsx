@@ -263,8 +263,27 @@ function Gallery() {
   )
 }
 
-const ALL_TIMES = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
-                   '14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30']
+function fmt12(h, m) {
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
+function getSlotsForDate(dateStr) {
+  if (!dateStr) return []
+  const day = new Date(dateStr + 'T12:00:00').getDay() // 0=Dom
+  if (day === 0) return [] // Domingo cerrado
+  const [startH, startM, endH, endM] = day === 1
+    ? [11, 0, 20, 0]   // Lunes 11am-8pm
+    : [8, 30, 19, 30]  // Mar-Sab 8:30am-7:30pm
+  const slots = []
+  let h = startH, m = startM
+  while (h < endH || (h === endH && m <= endM)) {
+    slots.push({ value: `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`, label: fmt12(h, m) })
+    m += 30; if (m >= 60) { m = 0; h++ }
+  }
+  return slots
+}
 
 const WA_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '18095087962'
 
@@ -274,16 +293,18 @@ function buildWaLink(phone, message) {
 }
 
 // ── Booking Form ─────────────────────────────────────────────────────────────
-function Booking({ services }) {
+function Booking({ services, barbers }) {
   const [loading, setLoading] = useState(false)
   const [takenSlots, setTakenSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [waLink, setWaLink] = useState(null)
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', service: '', date: '', time: ''
+    name: '', phone: '', email: '', service: '', barber: '', date: '', time: ''
   })
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const slots = getSlotsForDate(form.date)
+  const isSunday = form.date && new Date(form.date + 'T12:00:00').getDay() === 0
 
   const handleDateChange = async (date) => {
     set('date', date)
@@ -292,7 +313,7 @@ function Booking({ services }) {
     setLoadingSlots(true)
     try {
       const taken = await getTakenSlots(date)
-      setTakenSlots(taken)
+      setTakenSlots(taken.map(t => t.substring(0, 5)))
     } catch {
       setTakenSlots([])
     } finally {
@@ -312,16 +333,19 @@ function Booking({ services }) {
     }
     setLoading(true)
     const selectedService = services.find(s => s.name === form.service)
+    const selectedBarber = barbers.find(b => b.name === form.barber)
+    const timeLabel = slots.find(s => s.value === form.time)?.label || form.time
     try {
       await createAppointment({
         service_id: selectedService?.id || null,
+        barber_id: selectedBarber?.id || null,
         date: form.date,
         time: form.time,
         client_name: form.name,
         client_phone: form.phone,
         notes: form.email ? `Email: ${form.email}` : undefined,
       })
-      const msg = `🔔 Nueva cita desde la web\n\n👤 Cliente: ${form.name}\n📞 Tel: ${form.phone}\n✂️ Servicio: ${form.service}\n📅 Fecha: ${form.date}\n🕐 Hora: ${form.time}`
+      const msg = `🔔 Nueva cita desde la web\n\n👤 Cliente: ${form.name}\n📞 Tel: ${form.phone}\n✂️ Servicio: ${form.service}${form.barber ? `\n💈 Barbero: ${form.barber}` : ''}\n📅 Fecha: ${form.date}\n🕐 Hora: ${timeLabel}`
       setWaLink(buildWaLink(WA_NUMBER, msg))
       setForm({ name: '', phone: '', email: '', service: '', date: '', time: '' })
       setTakenSlots([])
@@ -386,6 +410,15 @@ function Booking({ services }) {
                   ))}
                 </select>
               </div>
+              {barbers.length > 1 && (
+                <div className="form-field full">
+                  <label>Barbero</label>
+                  <select value={form.barber} onChange={e => set('barber', e.target.value)}>
+                    <option value="">Sin preferencia</option>
+                    {barbers.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                  </select>
+                </div>
+              )}
               <div className="form-field">
                 <label>Fecha</label>
                 <input type="date" min={new Date().toISOString().split('T')[0]} value={form.date}
@@ -393,13 +426,15 @@ function Booking({ services }) {
               </div>
               <div className="form-field">
                 <label>Hora {loadingSlots && <span style={{ color: 'var(--gold)', fontSize: '11px' }}>Cargando...</span>}</label>
-                <select value={form.time} onChange={e => set('time', e.target.value)} disabled={!form.date || loadingSlots}>
-                  <option value="">{form.date ? 'Selecciona hora' : 'Primero elige fecha'}</option>
-                  {ALL_TIMES.map(t => {
-                    const taken = takenSlots.includes(t)
+                <select value={form.time} onChange={e => set('time', e.target.value)} disabled={!form.date || loadingSlots || isSunday}>
+                  <option value="">
+                    {!form.date ? 'Primero elige fecha' : isSunday ? 'Cerrado los domingos' : 'Selecciona hora'}
+                  </option>
+                  {slots.map(({ value, label }) => {
+                    const taken = takenSlots.includes(value)
                     return (
-                      <option key={t} value={t} disabled={taken}>
-                        {t}{taken ? ' — Ocupado' : ''}
+                      <option key={value} value={value} disabled={taken}>
+                        {label}{taken ? ' — Ocupado' : ''}
                       </option>
                     )
                   })}
@@ -474,10 +509,9 @@ function Contact() {
           <p className="section-desc">Visítanos o contáctanos por cualquiera de nuestros canales. Estaremos encantados de atenderte.</p>
           <div className="contact-items" style={{ marginTop: '40px' }}>
             {[
-              { icon: '📍', label: 'Dirección', text: 'Calle Principal 123, Ciudad' },
-              { icon: '📞', label: 'Teléfono', text: '+1 (555) 123-4567', href: 'tel:+15551234567' },
-              { icon: '💬', label: 'WhatsApp', text: 'Escríbenos ahora', href: 'https://wa.me/15551234567' },
-              { icon: '✉️', label: 'Correo', text: 'info@famybarber.com', href: 'mailto:info@famybarber.com' },
+              { icon: '📍', label: 'Dirección', text: 'Famybarberclub, Santo Domingo' },
+              { icon: '📞', label: 'Teléfono', text: '+1 (809) 508-7962', href: 'tel:+18095087962' },
+              { icon: '💬', label: 'WhatsApp', text: 'Escríbenos ahora', href: 'https://wa.me/18095087962' },
             ].map((c, i) => (
               <div key={i} className="contact-item">
                 <div className="contact-icon">{c.icon}</div>
@@ -493,7 +527,7 @@ function Contact() {
           <div className="map-wrap">
             <iframe
               title="Ubicación Famy Barber Club"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.521260322283!2d106.8195613507864!3d-6.194741395493371!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMTEnNDEuMSJTIDEwNsKwNDknMTEuMyJF!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid"
+              src="https://maps.google.com/maps?q=18.4707382,-69.9627236&z=16&output=embed"
               allowFullScreen loading="lazy"
             />
           </div>
@@ -603,8 +637,8 @@ function Footer({ services }) {
           <h4>Horarios</h4>
           <div className="footer-hours">
             {[
-              ['Lunes – Viernes', '9:00 – 19:00'],
-              ['Sábados', '9:00 – 18:00'],
+              ['Lunes', '11:00 AM – 8:00 PM'],
+              ['Martes – Sábado', '8:30 AM – 7:30 PM'],
               ['Domingos', 'Cerrado'],
             ].map(([day, time]) => (
               <div key={day} className="hour-item">
@@ -650,7 +684,7 @@ export default function Landing() {
       <Services services={services} />
       <Gallery />
       <Memberships memberships={memberships} />
-      <Booking services={services} />
+      <Booking services={services} barbers={barbers} />
       <Testimonials />
       <Contact />
       <Footer services={services} />

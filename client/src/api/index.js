@@ -42,6 +42,7 @@ export const getBarberAvailability = (id, date) =>
   api.get(`/barbers/${id}/availability?date=${date}`).then(r => r.data)
 export const createBarber = (data) => api.post('/barbers', data).then(r => r.data)
 export const updateBarber = (id, data) => api.put(`/barbers/${id}`, data).then(r => r.data)
+export const deleteBarber = (id) => api.delete(`/barbers/${id}`).then(r => r.data)
 
 // Citas (protegidas)
 export const getAppointments = (date) =>

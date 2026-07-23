@@ -4,7 +4,8 @@ import toast from 'react-hot-toast'
 import { Check, X, LogOut, ChevronRight, Pencil, Save, MessageCircle } from 'lucide-react'
 import {
   getAppointments, updateAppointmentStatus,
-  getClients, getServices, getBarbers, createService, updateService, createBarber
+  getClients, getServices, getBarbers, createService, updateService, deleteService,
+  createBarber, updateBarber, deleteBarber
 } from '../api'
 import '../admin.css'
 
@@ -220,9 +221,10 @@ export default function Admin() {
             <div className="apt-list">
               {services.length > 0 && <div className="section-label">{services.length} servicios — haz clic en ✏ para editar precio</div>}
               {services.map(s => (
-                <ServiceRow key={s.id} service={s} onUpdated={updated =>
-                  setServices(sv => sv.map(x => x.id === updated.id ? updated : x))
-                } />
+                <ServiceRow key={s.id} service={s}
+                  onUpdated={updated => setServices(sv => sv.map(x => x.id === updated.id ? updated : x))}
+                  onDeleted={id => setServices(sv => sv.filter(x => x.id !== id))}
+                />
               ))}
             </div>
           </div>
@@ -233,15 +235,12 @@ export default function Admin() {
           <div>
             <NewBarberForm onCreated={b => setBarbers(bv => [...bv, b])} />
             <div className="apt-list">
-              {barbers.length > 0 && <div className="section-label">{barbers.length} barberos</div>}
+              {barbers.length > 0 && <div className="section-label">{barbers.length} barbero{barbers.length !== 1 ? 's' : ''}</div>}
               {barbers.map(b => (
-                <div key={b.id} className="barber-card">
-                  <div className="barber-avatar">{b.name.charAt(0).toUpperCase()}</div>
-                  <div>
-                    <div className="barber-name">{b.name}</div>
-                    {b.bio && <div className="barber-bio">{b.bio}</div>}
-                  </div>
-                </div>
+                <BarberRow key={b.id} barber={b}
+                  onUpdated={updated => setBarbers(bv => bv.map(x => x.id === updated.id ? updated : x))}
+                  onDeleted={id => setBarbers(bv => bv.filter(x => x.id !== id))}
+                />
               ))}
             </div>
           </div>
@@ -325,11 +324,18 @@ function ServiceRow({ service: s, onUpdated }) {
           {s.is_usd && <span style={{ marginLeft: '8px', color: 'var(--green)', fontSize: '11px', fontWeight: 600 }}>A domicilio</span>}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div className="service-price-admin">{currency}{Number(s.price).toLocaleString()}</div>
-        <button className="action-btn" title="Editar precio" onClick={() => setEditing(true)}
+        <button className="action-btn" title="Editar" onClick={() => setEditing(true)}
           style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--gold)' }}>
           <Pencil size={13} />
+        </button>
+        <button className="action-btn cancel" title="Eliminar" onClick={async () => {
+          if (!window.confirm(`¿Eliminar "${s.name}"?`)) return
+          try { await deleteService(s.id); onDeleted(s.id); toast.success('Servicio eliminado') }
+          catch { toast.error('Error al eliminar') }
+        }}>
+          <X size={13} />
         </button>
       </div>
     </div>
@@ -378,6 +384,62 @@ function NewServiceForm({ onCreated }) {
         {loading ? 'Creando...' : '✦ Crear servicio'}
       </button>
     </form>
+  )
+}
+
+function BarberRow({ barber: b, onUpdated, onDeleted }) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({ name: b.name, bio: b.bio || '' })
+  const [loading, setLoading] = useState(false)
+
+  const save = async () => {
+    setLoading(true)
+    try {
+      const updated = await updateBarber(b.id, { name: form.name, bio: form.bio })
+      onUpdated(updated)
+      setEditing(false)
+      toast.success('Barbero actualizado')
+    } catch {
+      toast.error('Error al guardar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (editing) {
+    return (
+      <div className="barber-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+        <input className="admin-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nombre" />
+        <textarea className="admin-input" rows={3} value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} placeholder="Descripción / especialidad" style={{ resize: 'vertical', fontFamily: 'inherit' }} />
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="action-btn confirm" onClick={save} disabled={loading}><Save size={14} /></button>
+          <button className="action-btn cancel" onClick={() => { setEditing(false); setForm({ name: b.name, bio: b.bio || '' }) }}><X size={14} /></button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="barber-card">
+      <div className="barber-avatar">{b.name.charAt(0).toUpperCase()}</div>
+      <div style={{ flex: 1 }}>
+        <div className="barber-name">{b.name}</div>
+        {b.bio && <div className="barber-bio">{b.bio}</div>}
+      </div>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="action-btn" title="Editar" onClick={() => setEditing(true)}
+          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--gold)' }}>
+          <Pencil size={13} />
+        </button>
+        <button className="action-btn cancel" title="Eliminar" onClick={async () => {
+          if (!window.confirm(`¿Eliminar a "${b.name}"?`)) return
+          try { await deleteBarber(b.id); onDeleted(b.id); toast.success('Barbero eliminado') }
+          catch { toast.error('Error al eliminar') }
+        }}>
+          <X size={13} />
+        </button>
+      </div>
+    </div>
   )
 }
 
