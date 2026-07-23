@@ -306,15 +306,17 @@ function Booking({ services, barbers }) {
   const rawSlots = getSlotsForDate(form.date)
   const isSunday = form.date && new Date(form.date + 'T12:00:00').getDay() === 0
   const today = new Date().toISOString().split('T')[0]
-  const slots = form.date === today
-    ? rawSlots.filter(({ value }) => {
-        const [h, m] = value.split(':').map(Number)
-        const now = new Date()
-        const slotMin = h * 60 + m
-        const nowMin = now.getHours() * 60 + now.getMinutes() + 30 // 30 min de margen
-        return slotMin > nowMin
-      })
-    : rawSlots
+  const isToday = form.date === today
+  const slots = rawSlots.map(slot => {
+    if (!isToday) return { ...slot, blocked: null }
+    const [h, m] = slot.value.split(':').map(Number)
+    const now = new Date()
+    const slotMin = h * 60 + m
+    const nowMin = now.getHours() * 60 + now.getMinutes()
+    if (slotMin <= nowMin) return { ...slot, blocked: 'ya-paso' }
+    if (slotMin < nowMin + 30) return { ...slot, blocked: 'muy-pronto' }
+    return { ...slot, blocked: null }
+  })
 
   const handleDateChange = async (date) => {
     set('date', date)
@@ -339,6 +341,15 @@ function Booking({ services, barbers }) {
     }
     if (takenSlots.includes(form.time)) {
       toast.error('Ese horario ya está ocupado, elige otro')
+      return
+    }
+    const selectedSlot = slots.find(s => s.value === form.time)
+    if (selectedSlot?.blocked === 'ya-paso') {
+      toast.error('Ese horario ya pasó, elige uno más tarde')
+      return
+    }
+    if (selectedSlot?.blocked === 'muy-pronto') {
+      toast.error('Las reservas requieren al menos 30 minutos de anticipación')
       return
     }
     setLoading(true)
@@ -440,15 +451,25 @@ function Booking({ services, barbers }) {
                   <option value="">
                     {!form.date ? 'Primero elige fecha' : isSunday ? 'Cerrado los domingos' : 'Selecciona hora'}
                   </option>
-                  {slots.map(({ value, label }) => {
+                  {slots.map(({ value, label, blocked }) => {
                     const taken = takenSlots.includes(value)
+                    const isDisabled = taken || !!blocked
+                    let suffix = ''
+                    if (taken) suffix = ' — Ocupado'
+                    else if (blocked === 'ya-paso') suffix = ' — Ya pasó'
+                    else if (blocked === 'muy-pronto') suffix = ' — Mínimo 30 min de anticipación'
                     return (
-                      <option key={value} value={value} disabled={taken}>
-                        {label}{taken ? ' — Ocupado' : ''}
+                      <option key={value} value={value} disabled={isDisabled}>
+                        {label}{suffix}
                       </option>
                     )
                   })}
                 </select>
+                {isToday && (
+                  <span style={{ fontSize: '11px', color: 'var(--gold)', opacity: 0.75, marginTop: '4px', display: 'block' }}>
+                    Las reservas requieren al menos 30 min de anticipación
+                  </span>
+                )}
               </div>
             </div>
             <button type="submit" className="form-submit" disabled={loading}>
