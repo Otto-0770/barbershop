@@ -233,12 +233,13 @@ function Services({ services }) {
 
 // ── Gallery ──────────────────────────────────────────────────────────────────
 const GALLERY = [
-  { cls: 'gal-1 tall', label: 'Corte Fade', tall: true },
-  { cls: 'gal-2', label: 'Barba Diseñada' },
-  { cls: 'gal-3', label: 'Corte Clásico' },
-  { cls: 'gal-4', label: 'Afeitado Premium' },
-  { cls: 'gal-5', label: 'Corte Moderno' },
-  { cls: 'gal-6', label: 'Estilo Completo' },
+  { src: '/galeria-exterior.jpg',  label: 'Famy Barber Club',    tall: true },
+  { src: '/galeria-corte1.jpg',    label: 'Fade con Diseño' },
+  { src: '/galeria-corte2.jpg',    label: 'Degradado Perfecto' },
+  { src: '/galeria-interior.jpg',  label: 'Nuestro Espacio' },
+  { src: '/galeria-corte3.jpg',    label: 'Corte Ejecutivo' },
+  { src: '/galeria-barba.jpg',     label: 'Barba Completa' },
+  { src: '/galeria-sala.jpg',      label: 'Zona de Espera' },
 ]
 
 function Gallery() {
@@ -252,7 +253,8 @@ function Gallery() {
       <div className="gallery-grid">
         {GALLERY.map((g, i) => (
           <div key={i} className={`gallery-item ${g.tall ? 'tall' : ''} reveal`} style={{ transitionDelay: `${i * 0.1}s` }}>
-            <div className={`gallery-placeholder ${g.cls.split(' ')[0]}`} style={{ minHeight: g.tall ? '400px' : '200px' }}>
+            <div className="gallery-placeholder">
+              <img src={g.src} alt={g.label} className="gallery-img" loading="lazy" />
               <div className="gallery-overlay"><span>Ver más</span></div>
               <div className="gallery-label">{g.label}</div>
             </div>
