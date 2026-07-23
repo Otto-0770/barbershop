@@ -31,13 +31,26 @@ router.get('/taken-slots', async (req, res) => {
 
   const { data, error } = await supabase
     .from('appointments')
-    .select('time')
+    .select('time, services(duration_minutes)')
     .eq('date', date)
     .in('status', ['pending', 'confirmed'])
 
   if (error) return res.status(500).json({ error: error.message })
-  const times = [...new Set(data.map(a => a.time))]
-  res.json(times)
+
+  const blocked = new Set()
+  for (const apt of data) {
+    const [h, m] = apt.time.split(':').map(Number)
+    const duration = apt.services?.duration_minutes || 60
+    const slots = Math.ceil(duration / 30)
+    for (let i = 0; i < slots; i++) {
+      const totalMin = h * 60 + m + i * 30
+      const hh = String(Math.floor(totalMin / 60)).padStart(2, '0')
+      const mm = String(totalMin % 60).padStart(2, '0')
+      blocked.add(`${hh}:${mm}`)
+    }
+  }
+
+  res.json([...blocked])
 })
 
 // POST /api/appointments — reservar una cita (cliente público)

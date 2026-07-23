@@ -662,6 +662,7 @@ export default function Landing() {
   useReveal()
   const [services, setServices] = useState([])
   const [memberships, setMemberships] = useState([])
+  const [barbers, setBarbers] = useState([])
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -674,6 +675,7 @@ export default function Landing() {
   useEffect(() => {
     getServices().then(setServices).catch(() => {})
     getMemberships().then(setMemberships).catch(() => {})
+    getBarbers().then(setBarbers).catch(() => {})
   }, [])
 
   return (
