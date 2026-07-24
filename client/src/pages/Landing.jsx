@@ -142,20 +142,20 @@ function About() {
         </div>
         <div className="reveal-right">
           <div className="section-tag">Nuestra historia</div>
-          <h2 className="section-title">Más de una década <span>generando sonrisas.</span></h2>
+          <h2 className="section-title">Más de una década de <span>experiencia y estilo.</span></h2>
           <div className="divider" />
           <p className="section-desc">
-            En Famy Barber Club somos una peluquería para caballeros y niños comprometida con la excelencia en cada servicio. Desde el primer día, nuestra filosofía ha sido clara: el buen uso de las herramientas de corte marca la diferencia entre un corte común y una experiencia que se nota.
+            En Famy Barber Club ofrecemos más que un corte: brindamos una experiencia de cuidado, estilo y confianza para caballeros y niños.
           </p>
           <p className="section-desc" style={{ marginTop: '16px' }}>
-            Con más de una década cuidando a nuestra gente, seguimos innovando y perfeccionando cada técnica para que cada cliente salga no solo bien cortado, sino satisfecho. Porque aquí el trabajo no termina hasta que tú sonríes.
+            Con más de una década de experiencia, combinamos técnica, herramientas profesionales y atención personalizada para que cada cliente salga satisfecho, renovado y con un look que le represente.
           </p>
           <div className="about-features">
             {[
-              { icon: '✂️', title: 'Dominio de la herramienta', desc: 'Precisión y técnica en cada corte, desde clásicos hasta los estilos más modernos.' },
-              { icon: '👦', title: 'Para caballeros y niños', desc: 'Un espacio pensado para todas las edades, con la misma dedicación en cada silla.' },
-              { icon: '🔄', title: 'Siempre innovando', desc: 'Más de diez años en el oficio y todavía aprendemos algo nuevo para darte lo mejor.' },
-              { icon: '🏆', title: 'Excelencia como estándar', desc: 'No hay servicio pequeño. Cada cliente merece lo mismo: lo mejor que podemos dar.' },
+              { icon: '✂️', title: 'Dominio de la técnica', desc: 'Cada corte se realiza con precisión, desde estilos clásicos hasta degradados modernos y acabados definidos.' },
+              { icon: '👦', title: 'Para caballeros y niños', desc: 'Un espacio cómodo y profesional para todas las edades, con atención dedicada en cada visita.' },
+              { icon: '🔄', title: 'Siempre evolucionando', desc: 'Nos mantenemos aprendiendo y perfeccionando nuestras técnicas para ofrecerte lo mejor en cada servicio.' },
+              { icon: '🏆', title: 'Calidad en cada detalle', desc: 'No importa el servicio que elijas: nuestro compromiso es que salgas con un resultado que te haga sentir bien.' },
             ].map((f, i) => (
               <div key={i} className="about-feat">
                 <span className="about-feat-icon">{f.icon}</span>
