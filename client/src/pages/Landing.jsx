@@ -649,7 +649,7 @@ function Footer({ services }) {
           <div className="logo-sub">Barber Club</div>
           <p>Más que una barbería, una experiencia de distinción y estilo. Tu imagen, nuestra pasión.</p>
           <div className="footer-socials">
-            {['📘','📷','🐦','📹'].map((s, i) => <a key={i} href="#" className="social-btn">{s}</a>)}
+            <a href="https://www.instagram.com/famybarberclub/" target="_blank" rel="noopener noreferrer" className="social-btn">📷</a>
           </div>
         </div>
         <div className="footer-col">
