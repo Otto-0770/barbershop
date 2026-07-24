@@ -274,10 +274,10 @@ function fmt12(h, m) {
 function getSlotsForDate(dateStr) {
   if (!dateStr) return []
   const day = new Date(dateStr + 'T12:00:00').getDay() // 0=Dom
-  if (day === 0) return [] // Domingo cerrado
-  const [startH, startM, endH, endM] = day === 1
-    ? [11, 0, 20, 0]   // Lunes 11am-8pm
-    : [8, 30, 19, 30]  // Mar-Sab 8:30am-7:30pm
+  const [startH, startM, endH, endM] =
+    day === 0 ? [9, 30, 15, 0]   // Domingo 9:30am-3pm
+    : day === 1 ? [11, 30, 20, 0] // Lunes 11:30am-8pm
+    : [8, 30, 19, 30]             // Mar-Sab 8:30am-7:30pm
   const slots = []
   let h = startH, m = startM
   while (h < endH || (h === endH && m <= endM)) {
@@ -306,7 +306,7 @@ function Booking({ services, barbers }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const rawSlots = getSlotsForDate(form.date)
-  const isSunday = form.date && new Date(form.date + 'T12:00:00').getDay() === 0
+  const isSunday = false
   const today = new Date().toISOString().split('T')[0]
   const isToday = form.date === today
   const slots = rawSlots.map(slot => {
@@ -451,7 +451,7 @@ function Booking({ services, barbers }) {
                 <label>Hora {loadingSlots && <span style={{ color: 'var(--gold)', fontSize: '11px' }}>Cargando...</span>}</label>
                 <select value={form.time} onChange={e => set('time', e.target.value)} disabled={!form.date || loadingSlots || isSunday}>
                   <option value="">
-                    {!form.date ? 'Primero elige fecha' : isSunday ? 'Cerrado los domingos' : 'Selecciona hora'}
+                    {!form.date ? 'Primero elige fecha' : 'Selecciona hora'}
                   </option>
                   {slots.map(({ value, label, blocked }) => {
                     const taken = takenSlots.includes(value)
@@ -670,9 +670,9 @@ function Footer({ services }) {
           <h4>Horarios</h4>
           <div className="footer-hours">
             {[
-              ['Lunes', '11:00 AM – 8:00 PM'],
+              ['Lunes', '11:30 AM – 8:00 PM'],
               ['Martes – Sábado', '8:30 AM – 7:30 PM'],
-              ['Domingos', 'Cerrado'],
+              ['Domingos', '9:30 AM – 3:00 PM'],
             ].map(([day, time]) => (
               <div key={day} className="hour-item">
                 <span className="day">{day}</span>
