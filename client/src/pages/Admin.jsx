@@ -389,13 +389,13 @@ function NewServiceForm({ onCreated }) {
 
 function BarberRow({ barber: b, onUpdated, onDeleted }) {
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ name: b.name, bio: b.bio || '' })
+  const [form, setForm] = useState({ name: b.name, bio: b.bio || '', photo_url: b.photo_url || '' })
   const [loading, setLoading] = useState(false)
 
   const save = async () => {
     setLoading(true)
     try {
-      const updated = await updateBarber(b.id, { name: form.name, bio: form.bio })
+      const updated = await updateBarber(b.id, { name: form.name, bio: form.bio, photo_url: form.photo_url || null })
       onUpdated(updated)
       setEditing(false)
       toast.success('Barbero actualizado')
@@ -411,9 +411,11 @@ function BarberRow({ barber: b, onUpdated, onDeleted }) {
       <div className="barber-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
         <input className="admin-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nombre" />
         <textarea className="admin-input" rows={3} value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} placeholder="Descripción / especialidad" style={{ resize: 'vertical', fontFamily: 'inherit' }} />
+        <input className="admin-input" value={form.photo_url} onChange={e => setForm(f => ({ ...f, photo_url: e.target.value }))} placeholder="URL de la foto (pega el enlace de la imagen)" />
+        {form.photo_url && <img src={form.photo_url} alt="preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '50%', border: '2px solid var(--gold)' }} onError={e => e.target.style.display='none'} />}
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="action-btn confirm" onClick={save} disabled={loading}><Save size={14} /></button>
-          <button className="action-btn cancel" onClick={() => { setEditing(false); setForm({ name: b.name, bio: b.bio || '' }) }}><X size={14} /></button>
+          <button className="action-btn cancel" onClick={() => { setEditing(false); setForm({ name: b.name, bio: b.bio || '', photo_url: b.photo_url || '' }) }}><X size={14} /></button>
         </div>
       </div>
     )
@@ -421,7 +423,10 @@ function BarberRow({ barber: b, onUpdated, onDeleted }) {
 
   return (
     <div className="barber-card">
-      <div className="barber-avatar">{b.name.charAt(0).toUpperCase()}</div>
+      {b.photo_url
+        ? <img src={b.photo_url} alt={b.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)', flexShrink: 0 }} onError={e => { e.target.style.display='none' }} />
+        : <div className="barber-avatar">{b.name.charAt(0).toUpperCase()}</div>
+      }
       <div style={{ flex: 1 }}>
         <div className="barber-name">{b.name}</div>
         {b.bio && <div className="barber-bio">{b.bio}</div>}
@@ -444,16 +449,16 @@ function BarberRow({ barber: b, onUpdated, onDeleted }) {
 }
 
 function NewBarberForm({ onCreated }) {
-  const [form, setForm] = useState({ name: '', bio: '' })
+  const [form, setForm] = useState({ name: '', bio: '', photo_url: '' })
   const [loading, setLoading] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const created = await createBarber(form)
+      const created = await createBarber({ name: form.name, bio: form.bio, photo_url: form.photo_url || null })
       onCreated(created)
-      setForm({ name: '', bio: '' })
+      setForm({ name: '', bio: '', photo_url: '' })
       toast.success('Barbero creado')
     } catch {
       toast.error('Error al crear barbero')
@@ -472,6 +477,8 @@ function NewBarberForm({ onCreated }) {
           value={form.name} onChange={e => set('name', e.target.value)} />
         <input className="admin-input" placeholder="Especialidad o bio (opcional)"
           value={form.bio} onChange={e => set('bio', e.target.value)} />
+        <input className="admin-input" placeholder="URL de la foto (opcional)"
+          value={form.photo_url} onChange={e => set('photo_url', e.target.value)} />
       </div>
       <button type="submit" disabled={loading} className="admin-form-btn">
         {loading ? 'Creando...' : '✦ Crear barbero'}

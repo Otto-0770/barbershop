@@ -55,6 +55,7 @@ function Navbar() {
     { href: '#inicio', label: 'Inicio' },
     { href: '#nosotros', label: 'Nosotros' },
     { href: '#servicios', label: 'Servicios' },
+    { href: '#barberos', label: 'Barberos' },
     { href: '#membresias', label: 'Membresías' },
     { href: '#galeria', label: 'Galería' },
     { href: '#contacto', label: 'Contacto' },
@@ -115,9 +116,8 @@ function Hero() {
       </div>
       <div className="hero-stats">
         <div className="stat"><div className="stat-num">500+</div><div className="stat-label">Clientes satisfechos</div></div>
-        <div className="stat"><div className="stat-num">8+</div><div className="stat-label">Años de experiencia</div></div>
-        <div className="stat"><div className="stat-num">3</div><div className="stat-label">Barberos expertos</div></div>
-        <div className="stat"><div className="stat-num">100%</div><div className="stat-label">Satisfacción</div></div>
+        <div className="stat"><div className="stat-num">10+</div><div className="stat-label">Años de experiencia</div></div>
+        <div className="stat"><div className="stat-num">100%</div><div className="stat-label">Satisfacción garantizada</div></div>
       </div>
       <div className="hero-scroll">
         <span>Scroll</span>
@@ -133,7 +133,9 @@ function About() {
     <section id="nosotros" className="about-section section">
       <div className="about-grid">
         <div className="about-image-wrap reveal-left">
-          <div className="about-image" />
+          <div className="about-image">
+            <img src="/galeria-interior.jpg" alt="Interior Famy Barber Club" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
           <div className="about-image-border" />
           <div className="about-badge">
             <div className="num">10+</div>
@@ -192,7 +194,25 @@ const getIcon = (name, isUsd) => {
   return SERVICE_ICONS[name.toLowerCase()] || '✂️'
 }
 
+function ServiceCard({ s, i }) {
+  return (
+    <div key={s.id} className="service-card reveal" style={{ transitionDelay: `${i * 0.08}s` }}>
+      <div className="service-num">{String(i + 1).padStart(2, '0')}</div>
+      <span className="service-icon">{getIcon(s.name, s.is_usd)}</span>
+      <div className="service-name">{s.name.replace(/ a domicilio$/i, '')}</div>
+      <div className="service-desc">{s.description}</div>
+      <div className="service-price">
+        {s.price_from && <span style={{ fontSize: '14px', fontWeight: 400 }}>Desde </span>}
+        {s.is_usd ? `US$${Number(s.price)}` : `RD$${Number(s.price).toLocaleString()}`}
+      </div>
+    </div>
+  )
+}
+
 function Services({ services }) {
+  const inBarber = services.filter(s => !s.is_usd)
+  const atHome   = services.filter(s => s.is_usd)
+
   useEffect(() => {
     if (services.length === 0) return
     const els = document.querySelectorAll('#servicios .reveal')
@@ -212,21 +232,30 @@ function Services({ services }) {
         <div className="divider" />
         <p className="section-desc">Servicios diseñados para hombres que valoran su imagen y apariencia.</p>
       </div>
-      <div className="services-grid">
-        {services.map((s, i) => (
-          <div key={s.id} className={`service-card reveal${s.is_usd ? ' service-card-home' : ''}`} style={{ transitionDelay: `${i * 0.08}s` }}>
-            <div className="service-num">{String(i + 1).padStart(2, '0')}</div>
-            <span className="service-icon">{getIcon(s.name, s.is_usd)}</span>
-            {s.is_usd && <span className="service-home-badge">A domicilio</span>}
-            <div className="service-name">{s.name.replace(/ a domicilio$/i, '')}</div>
-            <div className="service-desc">{s.description}</div>
-            <div className="service-price">
-              {s.price_from && <span style={{ fontSize: '14px', fontWeight: 400 }}>Desde </span>}
-              {s.is_usd ? `US$${Number(s.price)}` : `RD$${Number(s.price).toLocaleString()}`}
+
+      {inBarber.length > 0 && (
+        <>
+          <div className="services-subsection-label reveal">✦ En barbería</div>
+          <div className="services-grid">
+            {inBarber.map((s, i) => <ServiceCard key={s.id} s={s} i={i} />)}
+          </div>
+        </>
+      )}
+
+      {atHome.length > 0 && (
+        <div className="at-home-section">
+          <div className="at-home-header reveal">
+            <div className="at-home-icon">🏠</div>
+            <div>
+              <h3 className="at-home-title">Servicios a domicilio</h3>
+              <p className="at-home-desc">Llevamos la experiencia Famy hasta donde estés. Agenda tu servicio y te atendemos en tu hogar u oficina.</p>
             </div>
           </div>
-        ))}
-      </div>
+          <div className="services-grid">
+            {atHome.map((s, i) => <ServiceCard key={s.id} s={s} i={i} />)}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -255,8 +284,39 @@ function Gallery() {
           <div key={i} className={`gallery-item ${g.tall ? 'tall' : ''} reveal`} style={{ transitionDelay: `${i * 0.1}s` }}>
             <div className="gallery-placeholder">
               <img src={g.src} alt={g.label} className="gallery-img" loading="lazy" />
-              <div className="gallery-overlay"><span>Ver más</span></div>
+              <div className="gallery-overlay" />
               <div className="gallery-label">{g.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ── Barbers ──────────────────────────────────────────────────────────────────
+function Barbers({ barbers }) {
+  if (barbers.length === 0) return null
+  return (
+    <section id="barberos" className="barbers-section section">
+      <div className="barbers-header reveal">
+        <div className="section-tag">Nuestro equipo</div>
+        <h2 className="section-title">Conoce a quien <span>te atenderá.</span></h2>
+        <div className="divider" />
+        <p className="section-desc">Profesionales dedicados a dar lo mejor en cada servicio.</p>
+      </div>
+      <div className="barbers-grid">
+        {barbers.map((b, i) => (
+          <div key={b.id} className="barber-card-web reveal" style={{ transitionDelay: `${i * 0.15}s` }}>
+            <div className="barber-photo-wrap">
+              {b.photo_url
+                ? <img src={b.photo_url} alt={b.name} className="barber-photo" />
+                : <div className="barber-photo-placeholder">{b.name.charAt(0).toUpperCase()}</div>
+              }
+            </div>
+            <div className="barber-info-web">
+              <h3 className="barber-name-web">{b.name}</h3>
+              {b.bio && <p className="barber-bio-web">{b.bio}</p>}
             </div>
           </div>
         ))}
@@ -392,8 +452,8 @@ function Booking({ services, barbers }) {
           </p>
           <div className="booking-highlights" style={{ marginTop: '40px' }}>
             {[
-              { icon: '⚡', title: 'Confirmación instantánea', desc: 'Recibe confirmación de tu cita al instante' },
-              { icon: '🔄', title: 'Fácil de modificar', desc: 'Cambia o cancela tu cita cuando necesites' },
+              { icon: '⚡', title: 'Rápido y sencillo', desc: 'Elige servicio, fecha y hora en menos de un minuto' },
+              { icon: '💬', title: 'Confirmación por WhatsApp', desc: 'Notificamos al barbero directamente al confirmar tu cita' },
               { icon: '🎯', title: 'Sin comisiones', desc: 'Reserva directamente sin costos adicionales' },
             ].map((h, i) => (
               <div key={i} className="booking-highlight">
@@ -495,40 +555,6 @@ function Booking({ services, barbers }) {
   )
 }
 
-// ── Testimonials ─────────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  { name: 'Andrés M.', detail: 'Cliente desde 2022', text: 'Famy Barber Club cambió mi perspectiva sobre las barberías. El nivel de detalle y precisión en cada corte es incomparable. Definitivamente el mejor lugar de la ciudad.', stars: '★★★★★', init: 'A' },
-  { name: 'Carlos R.', detail: 'Cliente habitual', text: 'El ambiente es premium desde que entras. Los barberos saben exactamente lo que quieres con solo describírtelo una vez. Mi barba nunca ha lucido tan bien.', stars: '★★★★★', init: 'C' },
-  { name: 'Miguel L.', detail: 'Cliente desde 2023', text: 'Vine recomendado por un amigo y no me arrepiento. El trato personalizado y la calidad de los productos que usan es de primer nivel. 100% recomendado.', stars: '★★★★★', init: 'M' },
-]
-
-function Testimonials() {
-  return (
-    <section className="testimonials-section section">
-      <div className="testimonials-header reveal">
-        <div className="section-tag" style={{ paddingLeft: 0 }}>Testimonios</div>
-        <h2 className="section-title">Lo que dicen<br /><span>nuestros clientes.</span></h2>
-        <div className="divider" />
-      </div>
-      <div className="testimonials-grid">
-        {TESTIMONIALS.map((t, i) => (
-          <div key={i} className="testimonial-card reveal" style={{ transitionDelay: `${i * 0.15}s` }}>
-            <div className="testimonial-quote">"</div>
-            <p className="testimonial-text">{t.text}</p>
-            <div className="testimonial-stars">{t.stars}</div>
-            <div className="testimonial-author">
-              <div className="author-avatar">{t.init}</div>
-              <div>
-                <div className="author-name">{t.name}</div>
-                <div className="author-detail">{t.detail}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
 
 // ── Contact ───────────────────────────────────────────────────────────────────
 function Contact() {
@@ -717,10 +743,10 @@ export default function Landing() {
       <Hero />
       <About />
       <Services services={services} />
+      <Barbers barbers={barbers} />
       <Gallery />
       <Memberships memberships={memberships} />
       <Booking services={services} barbers={barbers} />
-      <Testimonials />
       <Contact />
       <Footer services={services} />
     </div>
